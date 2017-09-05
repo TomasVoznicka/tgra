@@ -142,7 +142,7 @@ public class Lab1Game extends ApplicationAdapter {
 		clearModelMatrix();
 		setModelMatrixTranslation(Ball.x, Ball.y);
 		setModelMatrixScale(size1, size1);
-		Gdx.gl.glUniform4f(colorLoc, 0.7f, 0.4f, 0, 1);
+		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.4f, 0, 1);
 		CircleGraphic.drawSolidCircle();
 		
 
