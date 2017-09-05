@@ -142,11 +142,9 @@ public class Lab1Game extends ApplicationAdapter {
 		clearModelMatrix();
 		setModelMatrixTranslation(Ball.x, Ball.y);
 		setModelMatrixScale(size1, size1);
-		Gdx.gl.glUniform4f(colorLoc, 0.3f, 0.4f, 0, 1);
+		Gdx.gl.glUniform4f(colorLoc, 0.7f, 0.4f, 0, 1);
 		CircleGraphic.drawSolidCircle();
-		clearModelMatrix();
-		Line l = new Line(new Point2D(100, 200), new Point2D(300, 500));
-		l.draw(positionLoc);
+		
 
 		clearModelMatrix();
 		Gdx.gl.glUniform4f(colorLoc, 0.2f, 0.8f, 0.2f, 1);
@@ -156,7 +154,9 @@ public class Lab1Game extends ApplicationAdapter {
 			RectangleGraphic.drawSolidSquare();
 
 		}
-
+		clearModelMatrix();
+		Line l = new Line(new Point2D(100, 200), new Point2D(300, 500));
+		l.draw(positionLoc);
 	}
 
 	private void updateSqr1() {
