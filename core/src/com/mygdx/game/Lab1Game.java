@@ -27,14 +27,16 @@ public class Lab1Game extends ApplicationAdapter {
 
 	private int colorLoc;
 
-	Point2D Ball = new Point2D(0, 0);
-	private ArrayList<Rectangle> rectangles = new ArrayList<Rectangle>();
+	private ArrayList<Point2D> balls = new ArrayList<Point2D>();
 
-	private ArrayList<Line> lines = new ArrayList<Line>();
+	private ArrayList<Rectangle> rectanglesDraw = new ArrayList<Rectangle>();
+
+	private ArrayList<Line> linesDraw = new ArrayList<Line>();
+
+	private ArrayList<Line> bounceLines = new ArrayList<Line>();
 
 	int size1 = 10;
 
-	Vector2D movement = new Vector2D(400, 400);
 	float deltaT;
 	Point2D b1, b2, Phit, Pt, addline1 = null, addline2 = null, addRect1 = null, addrect2 = null;
 	Vector2D n;
@@ -111,63 +113,74 @@ public class Lab1Game extends ApplicationAdapter {
 
 	private void update() {
 		deltaT = Gdx.graphics.getDeltaTime();
+		checkForSpacebar();
+		checkForLeftButton();
 
-		if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-			if (addline1 == null) {
+		checkForRightButton();
 
-				addline1 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-				System.out.print("a");
-			}
+		moveBall();
 
-		} else {
-			if (addline1 != null) {
+	}
 
-				addline2 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-				System.out.print("b");
+	private void checkForSpacebar() {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
 
-			}
+			balls.add(new Point2D(0, 0, new Vector2D(200, 200)));
 		}
-		if (addline1 != null && addline2 != null) {
+	}
 
-			lines.add(new Line(addline1, addline2));
-			addline1 = null;
-			addline2 = null;
-			System.out.print("**Print**");
-		}
-
+	private void checkForRightButton() {
 		if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
 			if (addRect1 == null) {
 
 				addRect1 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-				System.out.print("a");
+
 			}
 
 		} else {
 			if (addRect1 != null) {
 
 				addrect2 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-				System.out.print("b");
 
 			}
 		}
 		if (addRect1 != null && addrect2 != null) {
+			Rectangle S = new Rectangle(addRect1, addrect2);
+			rectanglesDraw.add(S);
 
-			rectangles.add(new Rectangle(addRect1, addrect2));
+			bounceLines.add(new Line(S.p1, S.p2));
+			bounceLines.add(new Line(S.p2, S.p3));
+			bounceLines.add(new Line(S.p4, S.p3));
+			bounceLines.add(new Line(S.p1, S.p4));
+
 			addRect1 = null;
 			addrect2 = null;
-			System.out.print("**Print**");
 		}
-		
-		for (Rectangle S : rectangles) {
-			lines.add(new Line(S.p1, S.p2));
-			lines.add(new Line(S.p2, S.p3));
-			lines.add(new Line(S.p4, S.p3));
-			lines.add(new Line(S.p1, S.p4));
+	}
+
+	private void checkForLeftButton() {
+		if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+			if (addline1 == null) {
+
+				addline1 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
+
+			}
+
+		} else {
+			if (addline1 != null) {
+
+				addline2 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
+
+			}
 		}
+		if (addline1 != null && addline2 != null) {
 
-		updateSqr1();
+			bounceLines.add(new Line(addline1, addline2));
+			linesDraw.add(new Line(addline1, addline2));
+			addline1 = null;
+			addline2 = null;
 
-		updateSqr3();
+		}
 	}
 
 	private void display() {
@@ -175,77 +188,71 @@ public class Lab1Game extends ApplicationAdapter {
 		Gdx.gl20.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		OrthographicProjection2D(0, Gdx.graphics.getWidth(), 0, Gdx.graphics.getHeight());
 
-		clearModelMatrix();
-		setModelMatrixTranslation(Ball.x, Ball.y);
-		setModelMatrixScale(size1, size1);
-		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.4f, 0, 1);
-		CircleGraphic.drawSolidCircle();
+		for (Point2D ball : balls) {
+			clearModelMatrix();
+			setModelMatrixTranslation(ball.x, ball.y);
+			setModelMatrixScale(size1, size1);
+			Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.4f, 0, 1);
+			CircleGraphic.drawSolidCircle();
+		}
 
 		clearModelMatrix();
 		Gdx.gl.glUniform4f(colorLoc, 0.2f, 0.8f, 0.2f, 1);
-		for (Rectangle S : rectangles) {
+
+		for (Rectangle S : rectanglesDraw) {
 			setModelMatrixTranslation(S.center().x, S.center().y);
 			setModelMatrixScale(S.width(), S.height());
 			RectangleGraphic.drawSolidSquare();
 
 		}
-		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.8f, 0, 1);
+
 		clearModelMatrix();
-		for (Line L : lines) {
+		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.8f, 0, 1);
+		for (Line L : linesDraw) {
 
 			L.draw(positionLoc);
 
 		}
 	}
 
-	private void updateSqr1() {
+	private void moveBall() {
 		testForBounce();
-		Ball.translate(movement.x * deltaT, movement.y * deltaT);
-
-	}
-
-	private void updateSqr3() {
+		for (Point2D P : balls) {
+			P.translate(P.v.x * deltaT, P.v.y * deltaT);
+		}
 
 	}
 
 	private void testForBounce() {
-		if (movement.x > 0) {
-
-			if (Ball.x >= Gdx.graphics.getWidth() - size1)
-				movement.x = movement.x * (-1);
-		} else {
-			if (Ball.x <= size1)
-				movement.x = movement.x * (-1);
-		}
-		if (movement.y > 0) {
-			if (Ball.y >= Gdx.graphics.getHeight() - size1)
-				movement.y = movement.y * (-1);
-		} else {
-
-			if (Ball.y <= size1)
-				movement.y = movement.y * (-1);
-
-		}
 
 		// for (float i = 0; i < 2 * Math.PI; i += (2 * Math.PI) / (8 / 2)) {
 		// Pt = new Point2D(((float) Math.cos(i) * size1) + Ball.x, ((float) Math.sin(i)
 		// * size1) + Ball.y);
 
-		for (Line L : lines) {
+		for (Point2D ball : balls) {
+			edgesOfWindow(ball);
+
+			hitDetection(ball,deltaT);
+		}
+
+	}
+
+	private void hitDetection(Point2D ball,float currentDeltaT) {
+		for (Line L : bounceLines) {
 
 			b1 = L.p1;
 			b2 = L.p2;
 
 			n = Point2D.makeVector(b1, b2).getUnit();
 
-			eee = Point2D.makeVector(Ball, b1);
+			eee = Point2D.makeVector(ball, b1);
 			aa = Vector2D.dot(n, eee);
-			bb = Vector2D.dot(n, movement);
+			bb = Vector2D.dot(n, ball.v);
 			Thit = (aa) / (bb);
 
 			Vector2D R;
-			if (Thit <= deltaT && Thit >= 0) {
-				Phit = Point2D.translatePointByVector(Ball, Vector2D.scale(movement, Thit));
+			if (Thit <= currentDeltaT && Thit >= 0) {
+				Phit = Point2D.translatePointByVector(ball, Vector2D.scale(ball.v, Thit));
 
 				maxX = Math.max(b1.x, b2.x);
 				minX = Math.min(b1.x, b2.x);
@@ -254,16 +261,36 @@ public class Lab1Game extends ApplicationAdapter {
 
 				if (Phit.y <= maxY && Phit.y >= minY && Phit.x >= minX && Phit.x <= maxX) {
 
-					ccc = (2 * Vector2D.dot(movement, n) / Vector2D.dot(n, n));
-					R = Vector2D.subbTwo(movement, Vector2D.scale(n, ccc));
-					movement = R;
+					ccc = (2 * Vector2D.dot(ball.v, n) / Vector2D.dot(n, n));
+					R = Vector2D.subbTwo(ball.v, Vector2D.scale(n, ccc));
+					ball.v = R;
+					hitDetection(ball,currentDeltaT-Thit);
+					return;
 
 				}
 
 			}
-			// }
 		}
+	}
 
+	private void edgesOfWindow(Point2D ball) {
+		if (ball.v.x > 0) {
+
+			if (ball.x >= Gdx.graphics.getWidth() - size1)
+				ball.v.x = ball.v.x * (-1);
+		} else {
+			if (ball.x <= size1)
+				ball.v.x = ball.v.x * (-1);
+		}
+		if (ball.v.y > 0) {
+			if (ball.y >= Gdx.graphics.getHeight() - size1)
+				ball.v.y = ball.v.y * (-1);
+		} else {
+
+			if (ball.y <= size1)
+				ball.v.y = ball.v.y * (-1);
+
+		}
 	}
 
 	@Override
