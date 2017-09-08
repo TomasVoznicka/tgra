@@ -37,7 +37,7 @@ public class Lab1Game extends ApplicationAdapter {
 
 	int size1 = 10;
 
-	float deltaT;
+	float deltaT, initX = 1, initY = 1, speed = 100, angle = 1;
 	Point2D b1, b2, Phit, Pt, addline1 = null, addline2 = null, addRect1 = null, addrect2 = null;
 	Vector2D n;
 	Vector2D eee;
@@ -115,7 +115,7 @@ public class Lab1Game extends ApplicationAdapter {
 		deltaT = Gdx.graphics.getDeltaTime();
 		checkForSpacebar();
 		checkForLeftButton();
-
+		checkForUpDown();
 		checkForRightButton();
 
 		moveBall();
@@ -125,8 +125,22 @@ public class Lab1Game extends ApplicationAdapter {
 	private void checkForSpacebar() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
 
-			balls.add(new Point2D(0, 0, new Vector2D(200, 200)));
+			balls.add(new Point2D(0, 0, new Vector2D(initX * speed, initY * speed)));
 		}
+	}
+
+	private void checkForUpDown() {
+		if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+			if(angle + 0.01 <1.57)angle +=0.01;
+
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+			if(angle - 0.01 >0)angle -=0.01;
+		}
+		initX = (float) Math.cos(angle);
+		initY = (float) Math.sin(angle);
+
+		Gdx.graphics.setTitle(initX + ":" + initY+"::"+angle);
 	}
 
 	private void checkForRightButton() {
@@ -207,6 +221,10 @@ public class Lab1Game extends ApplicationAdapter {
 		}
 
 		clearModelMatrix();
+		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.8f, 0.7f, 1);
+		new Line(new Point2D(0, 0), new Point2D(initX * speed, initY * speed)).draw(positionLoc);
+
+		clearModelMatrix();
 		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.8f, 0, 1);
 		for (Line L : linesDraw) {
 
@@ -232,12 +250,12 @@ public class Lab1Game extends ApplicationAdapter {
 		for (Point2D ball : balls) {
 			edgesOfWindow(ball);
 
-			hitDetection(ball,deltaT);
+			hitDetection(ball, deltaT);
 		}
 
 	}
 
-	private void hitDetection(Point2D ball,float currentDeltaT) {
+	private void hitDetection(Point2D ball, float currentDeltaT) {
 		for (Line L : bounceLines) {
 
 			b1 = L.p1;
@@ -264,7 +282,7 @@ public class Lab1Game extends ApplicationAdapter {
 					ccc = (2 * Vector2D.dot(ball.v, n) / Vector2D.dot(n, n));
 					R = Vector2D.subbTwo(ball.v, Vector2D.scale(n, ccc));
 					ball.v = R;
-					hitDetection(ball,currentDeltaT-Thit);
+					hitDetection(ball, currentDeltaT - Thit);
 					return;
 
 				}
@@ -296,7 +314,6 @@ public class Lab1Game extends ApplicationAdapter {
 	@Override
 	public void render() {
 
-		Gdx.graphics.setTitle("00000");
 		Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
