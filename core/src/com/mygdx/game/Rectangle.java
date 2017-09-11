@@ -7,14 +7,20 @@ public class Rectangle {
 	Point2D p3;
 	Point2D p4;
 
+	float maxX, maxY, minX, minY;
     public Rectangle(Point2D p1,Point2D p2)
     {
-        this.p1 = new Point2D(p1.x,p1.y);
-        this.p3 = new Point2D(p2.x,p2.y);
+    	maxX = Math.max(p1.x, p2.x);
+		minX = Math.min(p1.x, p2.x);
+		maxY = Math.max(p1.y, p2.y);
+		minY = Math.min(p1.y, p2.y);
+		
+        this.p1 = new Point2D(minX,maxY);
+        this.p3 = new Point2D(maxX,minY);
         
         
-        this.p2 = new Point2D(p1.x,p2.y);
-        this.p4 = new Point2D(p2.x,p1.y);
+        this.p2 = new Point2D(minX,minY);
+        this.p4 = new Point2D(maxX,maxY);
 
     }
 

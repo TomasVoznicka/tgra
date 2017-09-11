@@ -11,6 +11,10 @@ public  Vector2D getUnit () {
 
 return new Vector2D(-y,x);
 }
+public float lenght()
+{
+	return (float)Math.sqrt(Math.pow(x, 2)+Math.pow(y, 2));
+}
 public static Vector2D scale (Vector2D v,float ds) {
 
 return new Vector2D(v.x*ds,v.y*ds);

@@ -5,7 +5,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.GL20;
 
-import java.awt.Point;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
@@ -35,15 +34,17 @@ public class Lab1Game extends ApplicationAdapter {
 
 	private ArrayList<Line> bounceLines = new ArrayList<Line>();
 
-	int size1 = 10;
-
-	float deltaT, initX = 1, initY = 1, speed = 100, angle = 1;
-	Point2D b1, b2, Phit, Pt, addline1 = null, addline2 = null, addRect1 = null, addrect2 = null;
+	int size1 = 10, maxBalls = 1, tSize = 50;
+	boolean leftPresed = false, rightPresed = false;
+	float deltaT, initX = 1, initY = 1, speed = 100, angle = 1, distanceFromTarget;
+	Point2D b1, b2, Phit, Pt, addline1 = null, addline2 = null, addRect1 = null, addrect2 = null,
+			target = new Point2D(700, 500);
 	Vector2D n;
 	Vector2D eee;
 	float Thit;
 	float aa, bb, ccc;
-	float maxX, maxY, minX, minY;
+	float maxX, maxY, minX, minY, scale = 0.8f;
+	Rectangle temp;
 
 	@Override
 	public void create() {
@@ -108,6 +109,8 @@ public class Lab1Game extends ApplicationAdapter {
 		RectangleGraphic.create(positionLoc);
 		CircleGraphic.create(positionLoc);
 		SincGraphic.create(positionLoc);
+		Gdx.gl20.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		OrthographicProjection2D(0, Gdx.graphics.getWidth(), 0, Gdx.graphics.getHeight());
 
 	}
 
@@ -115,36 +118,54 @@ public class Lab1Game extends ApplicationAdapter {
 		deltaT = Gdx.graphics.getDeltaTime();
 		checkForSpacebar();
 		checkForLeftButton();
-		checkForUpDown();
+		checkForArrows();
 		checkForRightButton();
+		if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+			balls.clear();
+			rectanglesDraw.clear();
+			linesDraw.clear();
+			bounceLines.clear();
 
+		}
 		moveBall();
 
 	}
 
 	private void checkForSpacebar() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+			if (balls.size() < maxBalls)
+				balls.add(new Point2D(0, 0, new Vector2D(initX * speed, initY * speed)));
 
-			balls.add(new Point2D(0, 0, new Vector2D(initX * speed, initY * speed)));
 		}
+
 	}
 
-	private void checkForUpDown() {
+	private void checkForArrows() {
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+			if (angle + 0.005 < 1.57)
+				angle += 0.005;
+
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+			if (angle - 0.005 > 0)
+				angle -= 0.005;
+		}
 		if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-			if(angle + 0.01 <1.57)angle +=0.01;
+			speed += 5;
 
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-			if(angle - 0.01 >0)angle -=0.01;
+			if (speed >= 105)
+				speed -= 5;
 		}
 		initX = (float) Math.cos(angle);
 		initY = (float) Math.sin(angle);
 
-		Gdx.graphics.setTitle(initX + ":" + initY+"::"+angle);
 	}
 
 	private void checkForRightButton() {
-		if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+		rightPresed = Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
+		if (rightPresed) {
 			if (addRect1 == null) {
 
 				addRect1 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
@@ -173,7 +194,8 @@ public class Lab1Game extends ApplicationAdapter {
 	}
 
 	private void checkForLeftButton() {
-		if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+		leftPresed = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
+		if (leftPresed) {
 			if (addline1 == null) {
 
 				addline1 = new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
@@ -198,37 +220,64 @@ public class Lab1Game extends ApplicationAdapter {
 	}
 
 	private void display() {
+		// target
+		clearModelMatrix();
+		setModelMatrixTranslation(target.x, target.y);
+		setModelMatrixScale(tSize, tSize);
+		Gdx.gl.glUniform4f(colorLoc, 0.0f, 0.9f, 0.0f, 1);
+		CircleGraphic.drawSolidCircle();
 
-		Gdx.gl20.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		OrthographicProjection2D(0, Gdx.graphics.getWidth(), 0, Gdx.graphics.getHeight());
-
+		// balls
+		clearModelMatrix();
+		setModelMatrixScale(size1, size1);
 		for (Point2D ball : balls) {
-			clearModelMatrix();
 			setModelMatrixTranslation(ball.x, ball.y);
-			setModelMatrixScale(size1, size1);
 			Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.4f, 0, 1);
+			if (ball.v.lenght() < 50)
+				Gdx.gl.glUniform4f(colorLoc, 0.0f, 0.5f, 0.0f, 1);
 			CircleGraphic.drawSolidCircle();
 		}
 
+		// rectangles
 		clearModelMatrix();
-		Gdx.gl.glUniform4f(colorLoc, 0.2f, 0.8f, 0.2f, 1);
-
+		Gdx.gl.glUniform4f(colorLoc, 0.5f, 0.1f, 0.2f, 1);
 		for (Rectangle S : rectanglesDraw) {
 			setModelMatrixTranslation(S.center().x, S.center().y);
 			setModelMatrixScale(S.width(), S.height());
 			RectangleGraphic.drawSolidSquare();
-
 		}
 
+		// "canon"
 		clearModelMatrix();
 		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.8f, 0.7f, 1);
 		new Line(new Point2D(0, 0), new Point2D(initX * speed, initY * speed)).draw(positionLoc);
 
+		// lines
 		clearModelMatrix();
 		Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.8f, 0, 1);
 		for (Line L : linesDraw) {
 
 			L.draw(positionLoc);
+
+		}
+
+		if (leftPresed) {
+			clearModelMatrix();
+			Gdx.gl.glUniform4f(colorLoc, 0.4f, 0.4f, 0.4f, 1);
+			new Line(new Point2D(addline1.x, addline1.y),
+					new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY())).draw(positionLoc);
+
+		}
+		if (rightPresed) {
+			clearModelMatrix();
+			Gdx.gl.glUniform4f(colorLoc, 0.4f, 0.4f, 0.4f, 1);
+
+			temp = new Rectangle(new Point2D(addRect1.x, addRect1.y),
+					new Point2D(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY()));
+
+			setModelMatrixTranslation(temp.center().x, temp.center().y);
+			setModelMatrixScale(temp.width(), temp.height());
+			RectangleGraphic.drawSolidSquare();
 
 		}
 	}
@@ -237,6 +286,12 @@ public class Lab1Game extends ApplicationAdapter {
 		testForBounce();
 		for (Point2D P : balls) {
 			P.translate(P.v.x * deltaT, P.v.y * deltaT);
+			if (P.v.lenght() < 50) {
+				distanceFromTarget = Point2D.makeVector(P, target).lenght();
+				if (distanceFromTarget < tSize + size1) {
+					System.exit(1);
+				}
+			}
 		}
 
 	}
@@ -251,6 +306,8 @@ public class Lab1Game extends ApplicationAdapter {
 			edgesOfWindow(ball);
 
 			hitDetection(ball, deltaT);
+
+			// Gdx.graphics.setTitle(speed+"::"+ball.v.lenght());
 		}
 
 	}
@@ -281,7 +338,7 @@ public class Lab1Game extends ApplicationAdapter {
 
 					ccc = (2 * Vector2D.dot(ball.v, n) / Vector2D.dot(n, n));
 					R = Vector2D.subbTwo(ball.v, Vector2D.scale(n, ccc));
-					ball.v = R;
+					ball.v = Vector2D.scale(R, scale);
 					hitDetection(ball, currentDeltaT - Thit);
 					return;
 
@@ -294,19 +351,30 @@ public class Lab1Game extends ApplicationAdapter {
 	private void edgesOfWindow(Point2D ball) {
 		if (ball.v.x > 0) {
 
-			if (ball.x >= Gdx.graphics.getWidth() - size1)
+			if (ball.x >= Gdx.graphics.getWidth() - size1) {
 				ball.v.x = ball.v.x * (-1);
+				// scale = (float) Math.random() + 0.2f;
+			}
+
 		} else {
-			if (ball.x <= size1)
+			if (ball.x <= size1) {
 				ball.v.x = ball.v.x * (-1);
+				// scale = (float) Math.random() + 0.2f;
+			}
+
 		}
 		if (ball.v.y > 0) {
-			if (ball.y >= Gdx.graphics.getHeight() - size1)
+			if (ball.y >= Gdx.graphics.getHeight() - size1) {
 				ball.v.y = ball.v.y * (-1);
+				// scale = (float) Math.random() + 0.2f;
+			}
+
 		} else {
 
-			if (ball.y <= size1)
+			if (ball.y <= size1) {
 				ball.v.y = ball.v.y * (-1);
+				// scale = (float) Math.random() + 0.2f;
+			}
 
 		}
 	}
