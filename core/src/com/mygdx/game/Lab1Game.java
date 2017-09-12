@@ -34,11 +34,11 @@ public class Lab1Game extends ApplicationAdapter {
 
 	private ArrayList<Line> bounceLines = new ArrayList<Line>();
 
-	int size1 = 10, maxBalls = 1, tSize = 50;
-	boolean leftPresed = false, rightPresed = false;
+	int size1 = 10, maxBalls = 1, tSize ,tSpeed=100;
+	boolean leftPresed = false, rightPresed = false,reset = false;
 	float deltaT, initX = 1, initY = 1, speed = 100, angle = 1, distanceFromTarget;
 	Point2D b1, b2, Phit, Pt, addline1 = null, addline2 = null, addRect1 = null, addrect2 = null,
-			target = new Point2D(700, 500);
+			target;
 	Vector2D n;
 	Vector2D eee;
 	float Thit;
@@ -109,6 +109,8 @@ public class Lab1Game extends ApplicationAdapter {
 		RectangleGraphic.create(positionLoc);
 		CircleGraphic.create(positionLoc);
 		SincGraphic.create(positionLoc);
+		target = new Point2D((float)Math.random()*800,(float)Math.random()*600);
+		tSize = (int)(Math.random()*30)+10;
 		Gdx.gl20.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		OrthographicProjection2D(0, Gdx.graphics.getWidth(), 0, Gdx.graphics.getHeight());
 
@@ -232,9 +234,8 @@ public class Lab1Game extends ApplicationAdapter {
 		setModelMatrixScale(size1, size1);
 		for (Point2D ball : balls) {
 			setModelMatrixTranslation(ball.x, ball.y);
-			Gdx.gl.glUniform4f(colorLoc, 0.9f, 0.4f, 0, 1);
-			if (ball.v.lenght() < 50)
-				Gdx.gl.glUniform4f(colorLoc, 0.0f, 0.5f, 0.0f, 1);
+			Gdx.gl.glUniform4f(colorLoc, 1-(tSpeed/ball.v.lenght()), (tSpeed/ball.v.lenght()), 0.0f, 1);
+			
 			CircleGraphic.drawSolidCircle();
 		}
 
@@ -286,10 +287,11 @@ public class Lab1Game extends ApplicationAdapter {
 		testForBounce();
 		for (Point2D P : balls) {
 			P.translate(P.v.x * deltaT, P.v.y * deltaT);
-			if (P.v.lenght() < 50) {
+			if (P.v.lenght() < tSpeed) {
 				distanceFromTarget = Point2D.makeVector(P, target).lenght();
 				if (distanceFromTarget < tSize + size1) {
-					System.exit(1);
+				reset = true;
+				
 				}
 			}
 		}
@@ -389,6 +391,16 @@ public class Lab1Game extends ApplicationAdapter {
 		// of the code
 		update();
 		display();
+		if (reset)
+		{
+			balls.clear();
+			rectanglesDraw.clear();
+			linesDraw.clear();
+			bounceLines.clear();
+			reset = false;
+			target = new Point2D((float)Math.random()*800,(float)Math.random()*600);
+			tSize = (int)(Math.random()*30)+10;
+		}
 
 	}
 
