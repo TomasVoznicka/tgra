@@ -29,10 +29,10 @@ Down key
 Space bar
 	- Launch the ball
 	
-Mouse left
+Mouse left (hold)
 	- Add a line obstacle
 	
-Mouse right
+Mouse right (hold)
 	- Add a rectangle obstacle
 	
 Q
@@ -51,7 +51,7 @@ Collision with obstacles:
 Collision with obstacles means collision with rectangles and lines added by the player. Bouncing from the lines is implemented using vector math that has been introduced on lectures. "Thit" and "Phit" are calculated for every line. When a matching line is found, a bounce happens. If there is time left for that frame, bounces are checked again. This means that multiple bounces can happen during one frame. 
 To be accurate, bounce should happen from the line that has the smallest "Thit". Now the first one to match is chosen, meaning that the order of adding obstacles do matter. This should however be a small issue so it hasn't been fixed.
 
-Collission with rectangles is easy when the collision for lines is already implemented because a rectangle is just four lines.
+Collission with rectangles is easy when the collision for lines is already implemented because a rectangle is treated as a four lines.
 
 Both collisions with lines and rectangles decrease the speed of the ball making it possible to hit the target.
 
